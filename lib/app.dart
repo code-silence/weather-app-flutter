@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'screens/home_screen.dart'; // একটু পরে আমরা এই স্ক্রিন বানাবো
+//import 'screens/home_screen.dart'; 
 
 class WeatherApp extends StatelessWidget {
   const WeatherApp({super.key});
@@ -23,10 +23,10 @@ class WeatherApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      themeMode: ThemeMode.system, // ফোনের থিম অনুযায়ী লাইট/ডার্ক মোড হবে
+      themeMode: ThemeMode.system, 
       home: const Scaffold(
         body: Center(
-          child: Text('Weather App Initialization...'), // হোম স্ক্রিন বানানোর পর এটা বদলে দেব
+          child: Text('Weather App Initialization...'), 
         ),
       ),
     );
