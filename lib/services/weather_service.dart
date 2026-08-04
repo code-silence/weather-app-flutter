@@ -11,26 +11,37 @@ class WeatherService {
     required double latitude,
     required double longitude,
   }) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      '/forecast',
-      queryParameters: {
-        'latitude': latitude,
-        'longitude': longitude,
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/forecast',
+        queryParameters: {
+          'latitude': latitude,
+          'longitude': longitude,
 
-        'current':
-            'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day',
+          'current':
+              'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day',
+          'hourly':
+              'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m',
 
-        'hourly':
-            'time,temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation_probability,is_day',
+          'daily':
+              'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset',
 
-        'daily':
-            'time,weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max',
+          'forecast_days': 7,
+          'timezone': 'auto',
+        },
+      );
 
-        'forecast_days': 7,
-        'timezone': 'auto',
-      },
-    );
+      print('========== WEATHER SUCCESS ==========');
+      print(response.requestOptions.uri);
+      print(response.data);
 
-    return response.data!;
+      return response.data!;
+    } on DioException catch (e) {
+      print('========== WEATHER ERROR ==========');
+      print('URL: ${e.requestOptions.uri}');
+      print('Status: ${e.response?.statusCode}');
+      print('Response: ${e.response?.data}');
+      rethrow;
+    }
   }
 }

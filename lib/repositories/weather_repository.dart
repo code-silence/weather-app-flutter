@@ -81,8 +81,11 @@ class WeatherRepository {
       );
     } on DioException catch (e) {
       throw AppException(e.message ?? 'Unable to fetch weather.');
-    } catch (_) {
-      throw const AppException('Something went wrong.');
+    } catch (e, stackTrace) {
+      print('========== REPOSITORY ERROR ==========');
+      print(e);
+      print(stackTrace);
+      rethrow;
     }
   }
 }
