@@ -8,12 +8,30 @@ class GeocodingService {
   final Dio _dio;
 
   Future<Map<String, dynamic>> searchCity(String city) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      '/search',
-      queryParameters: {'name': city, 'count': 1},
-    );
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/search',
+        queryParameters: {
+          'name': city,
+          'count': 1,
+        },
+      );
 
-    return response.data!;
+      print('========== SUCCESS ==========');
+      print(response.requestOptions.uri);
+      print(response.data);
+
+      return response.data!;
+    } on DioException catch (e) {
+      print('========== DIO ERROR ==========');
+      print('URL: ${e.requestOptions.uri}');
+      print('Status Code: ${e.response?.statusCode}');
+      print('Response: ${e.response?.data}');
+      rethrow;
+    } catch (e) {
+      print('========== UNKNOWN ERROR ==========');
+      print(e);
+      rethrow;
+    }
   }
-
 }

@@ -12,7 +12,7 @@ class DailyWeatherModel {
     required this.weatherCode,
     required this.sunrise,
     required this.sunset,
-    required this.precipitationProbability,
+    
   });
 
   final DateTime date;
@@ -21,7 +21,7 @@ class DailyWeatherModel {
   final int weatherCode;
   final DateTime sunrise;
   final DateTime sunset;
-  final int precipitationProbability;
+  
 
   factory DailyWeatherModel.fromApi({
     required int index,
@@ -36,8 +36,6 @@ class DailyWeatherModel {
       weatherCode: daily['weather_code'][index] as int,
       sunrise: DateTime.parse(daily['sunrise'][index]),
       sunset: DateTime.parse(daily['sunset'][index]),
-      precipitationProbability:
-          daily['precipitation_probability_max'][index] as int,
     );
   }
 }
