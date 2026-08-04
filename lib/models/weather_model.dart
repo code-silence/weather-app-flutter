@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../utils/weather_code_mapper.dart';
 import '../utils/weather_icon_mapper.dart';
 
