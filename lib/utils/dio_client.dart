@@ -27,4 +27,20 @@ class DioClient {
       ),
     );
   }
+
+  static Dio nominatim() {
+  return Dio(
+    BaseOptions(
+      baseUrl: 'https://nominatim.openstreetmap.org',
+      connectTimeout: AppConstants.connectTimeout,
+      receiveTimeout: AppConstants.receiveTimeout,
+      responseType: ResponseType.json,
+      headers: {
+        'User-Agent': 'weather_app_flutter',
+      },
+    ),
+  );
+}
+
+
 }

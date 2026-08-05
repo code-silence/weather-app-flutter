@@ -66,15 +66,35 @@ class WeatherRepository {
         (index) => DailyWeatherModel.fromApi(index: index, daily: dailyJson),
       );
 
+      LocationModel finalLocation;
+
+if (location != null) {
+  finalLocation = location;
+} else {
+  final reverseJson = await _geocodingService.reverseGeocode(
+    latitude: latitude,
+    longitude: longitude,
+  );
+
+  final address = reverseJson['address'] as Map<String, dynamic>;
+
+  finalLocation = LocationModel(
+    name: (address['city'] ??
+            address['town'] ??
+            address['village'] ??
+            address['municipality'] ??
+            '')
+        .toString(),
+    country: (address['country'] ?? '').toString(),
+    latitude: latitude,
+    longitude: longitude,
+  );
+}
+
+        
+
       return WeatherDataModel(
-        location:
-            location ??
-            const LocationModel(
-              name: '',
-              country: '',
-              latitude: 0,
-              longitude: 0,
-            ),
+        location: finalLocation,
         current: current,
         hourly: hourly,
         daily: daily,
