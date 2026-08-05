@@ -10,14 +10,13 @@ import '../services/geocoding_service.dart';
 import '../services/weather_service.dart';
 
 class WeatherRepository {
-  WeatherRepository({
-    required WeatherService weatherService,
-    required GeocodingService geocodingService,
-  }) : _weatherService = weatherService,
-       _geocodingService = geocodingService;
-
   final WeatherService _weatherService;
-  final GeocodingService _geocodingService;
+final GeocodingService _geocodingService;
+
+WeatherRepository({
+  required  this._weatherService,
+  required  this._geocodingService,
+});
 
   Future<WeatherDataModel> getWeatherByCity(String city) async {
     try {
