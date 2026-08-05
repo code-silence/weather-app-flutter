@@ -31,16 +31,8 @@ class WeatherService {
         },
       );
 
-      print('========== WEATHER SUCCESS ==========');
-      print(response.requestOptions.uri);
-      print(response.data);
-
       return response.data!;
-    } on DioException catch (e) {
-      print('========== WEATHER ERROR ==========');
-      print('URL: ${e.requestOptions.uri}');
-      print('Status: ${e.response?.statusCode}');
-      print('Response: ${e.response?.data}');
+    } on DioException catch (_) {
       rethrow;
     }
   }

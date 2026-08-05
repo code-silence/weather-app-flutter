@@ -68,30 +68,29 @@ class WeatherRepository {
 
       LocationModel finalLocation;
 
-if (location != null) {
-  finalLocation = location;
-} else {
-  final reverseJson = await _geocodingService.reverseGeocode(
-    latitude: latitude,
-    longitude: longitude,
-  );
+      if (location != null) {
+        finalLocation = location;
+      } else {
+        final reverseJson = await _geocodingService.reverseGeocode(
+          latitude: latitude,
+          longitude: longitude,
+        );
 
-  final address = reverseJson['address'] as Map<String, dynamic>;
+        final address = reverseJson['address'] as Map<String, dynamic>;
 
-  finalLocation = LocationModel(
-    name: (address['city'] ??
-            address['town'] ??
-            address['village'] ??
-            address['municipality'] ??
-            '')
-        .toString(),
-    country: (address['country'] ?? '').toString(),
-    latitude: latitude,
-    longitude: longitude,
-  );
-}
-
-        
+        finalLocation = LocationModel(
+          name:
+              (address['city'] ??
+                      address['town'] ??
+                      address['village'] ??
+                      address['municipality'] ??
+                      '')
+                  .toString(),
+          country: (address['country'] ?? '').toString(),
+          latitude: latitude,
+          longitude: longitude,
+        );
+      }
 
       return WeatherDataModel(
         location: finalLocation,
@@ -101,10 +100,7 @@ if (location != null) {
       );
     } on DioException catch (e) {
       throw AppException(e.message ?? 'Unable to fetch weather.');
-    } catch (e, stackTrace) {
-      print('========== REPOSITORY ERROR ==========');
-      print(e);
-      print(stackTrace);
+    } catch (_) {
       rethrow;
     }
   }
