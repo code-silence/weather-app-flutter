@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// Providers
 import '../providers/weather_notifier.dart';
-//import '../providers/weather_state.dart';
+
+// Widgets
+import '../widgets/current_weather_view.dart';
+import '../widgets/hourly_forecast_view.dart';
+import '../widgets/daily_forecast_view.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -86,10 +92,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (weatherState.error != null) {
       return Center(
-        child: Text(
-          weatherState.error!,
-          style: const TextStyle(color: Colors.red, fontSize: 16),
-          textAlign: TextAlign.center,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            weatherState.error!,
+            style: const TextStyle(color: Colors.red, fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
@@ -104,135 +113,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return ListView(
       children: [
-        // Location Header
-        // Location Header
-        Text(
-          weather.location.name.isNotEmpty 
-              ? '${weather.location.name}${weather.location.country.isNotEmpty ? ', ${weather.location.country}' : ''}'
-              : 'My Location', // Fallback text when name is empty
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 10),
-
-        // Current Temperature
-        Center(
-          child: Text(
-            '${weather.current.temperature}°C',
-            style: const TextStyle(
-              fontSize: 64,
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-        ),
-        
-        // Weather Description
-        Center(
-          child: Text(
-            weather.current.description,
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // Extra Info Card (Humidity & Wind)
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    const Icon(Icons.water_drop, color: Colors.blue),
-                    const SizedBox(height: 5),
-                    const Text('Humidity'),
-                    Text('${weather.current.humidity}%'),
-                  ],
-                ),
-                Column(
-                  children: [
-                    const Icon(Icons.air, color: Colors.teal),
-                    const SizedBox(height: 5),
-                    const Text('Wind Speed'),
-                    Text('${weather.current.windSpeed} km/h'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+        CurrentWeatherView(weather: weather),
         const SizedBox(height: 24),
-
-        
-        // Hourly Forecast Section
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Hourly Forecast',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            // Limit the list to maximum 24 items
-            itemCount: weather.hourly.length > 24 ? 24 : weather.hourly.length,
-            itemBuilder: (context, index) {
-              final hourlyData = weather.hourly[index];
-              return Card(
-                margin: const EdgeInsets.only(right: 10),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('${hourlyData.time.hour}:00'),
-                      const SizedBox(height: 8),
-                      Icon(hourlyData.icon, size: 30),
-                      const SizedBox(height: 8),
-                      Text('${hourlyData.temperature}°C'),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+        HourlyForecastView(hourly: weather.hourly),
         const SizedBox(height: 24),
-
-        // Daily Forecast Section
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '7-Day Forecast',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 10),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: weather.daily.length,
-          itemBuilder: (context, index) {
-            final dailyData = weather.daily[index];
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(dailyData.icon, size: 30),
-              title: Text('${dailyData.date.day}/${dailyData.date.month}'),
-              subtitle: Text(dailyData.description),
-              trailing: Text(
-                '${dailyData.minTemperature}° / ${dailyData.maxTemperature}°',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            );
-          },
-        ),
+        DailyForecastView(daily: weather.daily),
       ],
     );
   }
