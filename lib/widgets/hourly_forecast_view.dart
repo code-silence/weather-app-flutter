@@ -23,13 +23,15 @@ class HourlyForecastView extends StatelessWidget {
             itemCount: hourly.length > 24 ? 24 : hourly.length,
             itemBuilder: (context, index) {
               final data = hourly[index];
+              
               return Card(
                 margin: const EdgeInsets.only(right: 10),
                 child: Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Reverted back to the original 24-hour format
                       Text('${data.time.hour}:00'),
                       const SizedBox(height: 8),
                       Icon(data.icon, size: 30),
