@@ -10,14 +10,13 @@ import '../services/geocoding_service.dart';
 import '../services/weather_service.dart';
 
 class WeatherRepository {
-  WeatherRepository({
-    required WeatherService weatherService,
-    required GeocodingService geocodingService,
-  }) : _weatherService = weatherService,
-       _geocodingService = geocodingService;
-
   final WeatherService _weatherService;
-  final GeocodingService _geocodingService;
+final GeocodingService _geocodingService;
+
+WeatherRepository({
+  required  this._weatherService,
+  required  this._geocodingService,
+});
 
   Future<WeatherDataModel> getWeatherByCity(String city) async {
     try {
@@ -66,25 +65,41 @@ class WeatherRepository {
         (index) => DailyWeatherModel.fromApi(index: index, daily: dailyJson),
       );
 
+      LocationModel finalLocation;
+
+      if (location != null) {
+        finalLocation = location;
+      } else {
+        final reverseJson = await _geocodingService.reverseGeocode(
+          latitude: latitude,
+          longitude: longitude,
+        );
+
+        final address = reverseJson['address'] as Map<String, dynamic>;
+
+        finalLocation = LocationModel(
+          name:
+              (address['city'] ??
+                      address['town'] ??
+                      address['village'] ??
+                      address['municipality'] ??
+                      '')
+                  .toString(),
+          country: (address['country'] ?? '').toString(),
+          latitude: latitude,
+          longitude: longitude,
+        );
+      }
+
       return WeatherDataModel(
-        location:
-            location ??
-            const LocationModel(
-              name: '',
-              country: '',
-              latitude: 0,
-              longitude: 0,
-            ),
+        location: finalLocation,
         current: current,
         hourly: hourly,
         daily: daily,
       );
     } on DioException catch (e) {
       throw AppException(e.message ?? 'Unable to fetch weather.');
-    } catch (e, stackTrace) {
-      print('========== REPOSITORY ERROR ==========');
-      print(e);
-      print(stackTrace);
+    } catch (_) {
       rethrow;
     }
   }
