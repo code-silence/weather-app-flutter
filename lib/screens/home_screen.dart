@@ -22,6 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode(); // Added FocusNode to control keyboard smoothly
   
   bool _isManualRefreshing = false; 
   bool _isSearchExpanded = false; 
@@ -29,6 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose(); // Dispose the FocusNode to prevent memory leaks
     super.dispose();
   }
 
@@ -87,7 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Weather App',
+            'SkyCast',
             style: TextStyle(
               color: Colors.blueGrey.shade900, 
               fontWeight: FontWeight.w800,
@@ -111,7 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: _buildContent(weatherState),
               ),
 
-              // 2. Floating Glassmorphism Search Bar (Size Reduced)
+              // 2. Floating Glassmorphism Search Bar
               Positioned(
                 top: 5,
                 left: 16,
@@ -119,14 +121,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20), // Reduced border radius for a smaller box
+                    borderRadius: BorderRadius.circular(20), 
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0), 
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
-                        width: _isSearchExpanded ? screenWidth - 32 : 40, // Reduced collapsed width to 40
-                        height: 40, // Reduced height to 40
+                        width: _isSearchExpanded ? screenWidth - 32 : 40, 
+                        height: 40, 
                         decoration: BoxDecoration(
                           color: _isSearchExpanded 
                               ? Colors.white.withOpacity(0.95) 
@@ -144,19 +146,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 setState(() {
                                   _isSearchExpanded = !_isSearchExpanded;
                                   if (!_isSearchExpanded) {
+                                    // Close search and hide keyboard
                                     _searchController.clear();
-                                    FocusScope.of(context).unfocus();
+                                    _searchFocusNode.unfocus(); 
+                                  } else {
+                                    // Delay keyboard slightly so the animation can finish smoothly
+                                    Future.delayed(const Duration(milliseconds: 150), () {
+                                      if (mounted) {
+                                        _searchFocusNode.requestFocus();
+                                      }
+                                    });
                                   }
                                 });
                               },
                               child: Container(
-                                width: 38, // Adjusted to fit inside the 40px container
-                                height: 38, // Adjusted to fit inside the 40px container
+                                width: 38, 
+                                height: 38, 
                                 color: Colors.transparent,
                                 child: Icon(
                                   _isSearchExpanded ? Icons.close : Icons.search,
                                   color: Colors.blueGrey.shade900,
-                                  size: 20, // Reduced icon size from 24 to 20
+                                  size: 20, 
                                 ),
                               ),
                             ),
@@ -165,21 +175,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               Expanded(
                                 child: TextField(
                                   controller: _searchController,
-                                  autofocus: true, 
-                                  textAlignVertical: TextAlignVertical.center, // Keeps text vertically centered in a smaller height
-                                  style: const TextStyle(color: Colors.black87, fontSize: 15), // Reduced font size slightly
+                                  focusNode: _searchFocusNode, // Controlled by FocusNode instead of autofocus
+                                  textAlignVertical: TextAlignVertical.center, 
+                                  style: const TextStyle(color: Colors.black87, fontSize: 15), 
                                   decoration: const InputDecoration(
-                                    isDense: true, // Makes the TextField compact
+                                    isDense: true, 
                                     hintText: 'Enter city name...',
                                     hintStyle: TextStyle(color: Colors.black45),
                                     border: InputBorder.none,
-                                    contentPadding: EdgeInsets.only(right: 16), // Simplified padding for compact size
+                                    contentPadding: EdgeInsets.only(right: 16), 
                                   ),
                                   onSubmitted: (value) {
                                     if (value.trim().isNotEmpty) {
                                       ref.read(weatherNotifierProvider.notifier).searchCity(value.trim());
                                       _searchController.clear();
-                                      FocusScope.of(context).unfocus();
+                                      _searchFocusNode.unfocus(); // Hide keyboard properly
                                       setState(() {
                                         _isSearchExpanded = false;
                                       });
@@ -204,7 +214,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildContent(dynamic weatherState) {
     if (weatherState.isLoading && weatherState.weather == null) {
       return const Padding(
-        padding: EdgeInsets.only(top: 60.0), // Reduced top padding to match smaller search bar
+        padding: EdgeInsets.only(top: 60.0), 
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -224,7 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (weatherState.error != null && weatherState.weather == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 60.0), // Reduced top padding
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 60.0), 
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -243,7 +253,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (weatherState.weather == null) {
       return const Padding(
-        padding: EdgeInsets.only(top: 60.0), // Reduced top padding
+        padding: EdgeInsets.only(top: 60.0), 
         child: Center(
           child: Text(
             'Search for a city or tap the location icon',
@@ -273,7 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       },
       child: ListView(
-        padding: const EdgeInsets.only(top: 60.0, left: 16.0, right: 16.0, bottom: 20.0), // Reduced top padding from 70 to 60
+        padding: const EdgeInsets.only(top: 60.0, left: 16.0, right: 16.0, bottom: 20.0), 
         physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         children: [
           AnimatedSwitcher(
