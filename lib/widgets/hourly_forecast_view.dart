@@ -36,7 +36,7 @@ class HourlyForecastView extends StatelessWidget {
                 width: 80,
                 margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.4), // Glass effect
+                  color: Colors.white.withValues(alpha: 0.4), // Glass effect
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Padding(

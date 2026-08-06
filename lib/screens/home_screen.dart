@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Providers
 import '../providers/weather_notifier.dart';
-// Models
 import '../models/weather_data_model.dart';
-
-// Widgets
 import '../widgets/current_weather_view.dart';
 import '../widgets/hourly_forecast_view.dart';
 import '../widgets/daily_forecast_view.dart';
@@ -20,9 +16,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
-  
-  // State variable to control the manual refresh animation
-  bool _isManualRefreshing = false; 
+
+  bool _isManualRefreshing = false;
+  bool _isSearchExpanded = false;
 
   @override
   void dispose() {
@@ -30,10 +26,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  // Helper method to determine the background gradient based on weather condition
   LinearGradient _getBackgroundGradient(WeatherDataModel? weather) {
     if (weather == null) {
-      // Default Sky Blue gradient for loading or initial state
       return const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -43,29 +37,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final String condition = weather.current.description.toLowerCase();
 
-    if (condition.contains('rain') || condition.contains('drizzle') || condition.contains('thunder')) {
-      // Rainy weather: Soft Blue-Grey gradient
+    if (condition.contains('rain') ||
+        condition.contains('drizzle') ||
+        condition.contains('thunder')) {
       return const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [Color(0xFF9BAFD9), Color(0xFFE0E8F5)],
       );
-    } else if (condition.contains('cloud') || condition.contains('overcast') || condition.contains('fog')) {
-      // Cloudy weather: Soft Greyish gradient
+    } else if (condition.contains('cloud') ||
+        condition.contains('overcast') ||
+        condition.contains('fog')) {
       return const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [Color(0xFFCFD9DF), Color(0xFFE2EBF0)],
       );
     } else if (condition.contains('snow')) {
-      // Snowy weather: Frosty White gradient
       return const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [Color(0xFFE2E2E2), Color(0xFFFFFFFF)],
       );
     } else {
-      // Clear/Sunny weather: Vibrant Sky Blue
       return const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -77,22 +71,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final weatherState = ref.watch(weatherNotifierProvider);
+    final screenWidth = MediaQuery.sizeOf(context).width;
 
     return AnimatedContainer(
-      duration: const Duration(seconds: 1), // Smooth transition between colors
+      duration: const Duration(seconds: 1),
       decoration: BoxDecoration(
-        // The gradient will change dynamically based on the current weather
         gradient: _getBackgroundGradient(weatherState.weather),
       ),
       child: Scaffold(
+        resizeToAvoidBottomInset: false, // Prevents full scaffold rebuild on keyboard toggle
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Weather App',
+            'SkyCast',
             style: TextStyle(
-              color: Colors.blueGrey.shade900, 
+              color: Colors.blueGrey.shade900,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.2,
             ),
@@ -101,61 +96,105 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             IconButton(
               icon: Icon(Icons.my_location, color: Colors.blueGrey.shade900),
               onPressed: () {
-                ref.read(weatherNotifierProvider.notifier).getCurrentLocationWeather();
+                ref
+                    .read(weatherNotifierProvider.notifier)
+                    .getCurrentLocationWeather();
               },
             ),
           ],
         ),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                
-                // Search Bar
-                Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.1), // Reduced shadow slightly for cleaner look
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    style: const TextStyle(color: Colors.black87),
-                    decoration: InputDecoration(
-                      hintText: 'Enter city name (e.g., Dhaka)...',
-                      hintStyle: const TextStyle(color: Colors.black45),
-                      prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.95),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                      border: OutlineInputBorder(
+          child: Stack(
+            children: [
+              Positioned.fill(child: _buildContent(weatherState)),
+              Positioned(
+                top: 5,
+                left: 16,
+                right: 16,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      width: _isSearchExpanded ? screenWidth - 32 : 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        // Solid opacity instead of dynamic BackdropFilter blur
+                        color: _isSearchExpanded
+                            ? Colors.white.withValues(alpha: 0.95)
+                            : Colors.white.withValues(alpha: 0.55),
                         borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isSearchExpanded = !_isSearchExpanded;
+                                if (!_isSearchExpanded) {
+                                  _searchController.clear();
+                                  FocusScope.of(context).unfocus();
+                                }
+                              });
+                            },
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              color: Colors.transparent,
+                              child: Icon(
+                                _isSearchExpanded
+                                    ? Icons.close
+                                    : Icons.search,
+                                color: Colors.blueGrey.shade900,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          if (_isSearchExpanded)
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                autofocus: true,
+                                textAlignVertical: TextAlignVertical.center,
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 15,
+                                ),
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  hintText: 'Enter city name...',
+                                  hintStyle:
+                                      TextStyle(color: Colors.black45),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.only(right: 16),
+                                ),
+                                onSubmitted: (value) {
+                                  if (value.trim().isNotEmpty) {
+                                    ref
+                                        .read(weatherNotifierProvider.notifier)
+                                        .searchCity(value.trim());
+                                    _searchController.clear();
+                                    FocusScope.of(context).unfocus();
+                                    setState(() {
+                                      _isSearchExpanded = false;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    onSubmitted: (value) {
-                      if (value.trim().isNotEmpty) {
-                        ref.read(weatherNotifierProvider.notifier).searchCity(value.trim());
-                        _searchController.clear();
-                        FocusScope.of(context).unfocus();
-                      }
-                    },
                   ),
                 ),
-                const SizedBox(height: 25),
-
-                // Main Content Area
-                Expanded(
-                  child: _buildContent(weatherState),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -164,17 +203,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildContent(dynamic weatherState) {
     if (weatherState.isLoading && weatherState.weather == null) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: Colors.blueAccent),
-            SizedBox(height: 16),
-            Text(
-              'Fetching Weather...',
-              style: TextStyle(color: Colors.black54, fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-          ],
+      return const Padding(
+        padding: EdgeInsets.only(top: 75, left: 16, right: 16, bottom: 20),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.blueAccent),
+              SizedBox(height: 16),
+              Text(
+                'Fetching Weather...',
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -182,16 +228,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (weatherState.error != null && weatherState.weather == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 60.0,
+          ),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Text(
               weatherState.error!,
-              style: const TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -200,10 +253,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     if (weatherState.weather == null) {
-      return const Center(
-        child: Text(
-          'Search for a city or tap the location icon',
-          style: TextStyle(color: Colors.black54, fontSize: 16, fontWeight: FontWeight.w500),
+      return const Padding(
+        padding: EdgeInsets.only(top: 60.0),
+        child: Center(
+          child: Text(
+            'Search for a city or tap the location icon',
+            style: TextStyle(
+              color: Colors.black54,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
       );
     }
@@ -218,14 +278,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _isManualRefreshing = true;
         });
 
-        if (weather.location.name.isNotEmpty) {
-          ref.read(weatherNotifierProvider.notifier).searchCity(weather.location.name);
-        } else {
-          ref.read(weatherNotifierProvider.notifier).getCurrentLocationWeather();
-        }
-        
+        await ref.read(weatherNotifierProvider.notifier).refreshWeather();
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         if (context.mounted) {
           setState(() {
             _isManualRefreshing = false;
@@ -233,7 +288,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       },
       child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        padding: const EdgeInsets.only(
+          top: 60.0,
+          left: 16.0,
+          right: 16.0,
+          bottom: 20.0,
+        ),
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
         children: [
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 400),
@@ -265,21 +328,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: 250,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
+          child: const Center(
+            child: CircularProgressIndicator(color: Colors.blueAccent),
+          ),
         ),
         const SizedBox(height: 30),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Container(
-            height: 24,
-            width: 150,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(5),
-            ),
+        Container(
+          height: 24,
+          width: 150,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(5),
           ),
         ),
         const SizedBox(height: 15),
@@ -293,14 +355,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: 80,
                 margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Center(
                   child: SizedBox(
                     height: 24,
                     width: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blueAccent),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.blueAccent,
+                    ),
                   ),
                 ),
               );
@@ -308,15 +373,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         const SizedBox(height: 30),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Container(
-            height: 24,
-            width: 150,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(5),
-            ),
+        Container(
+          height: 24,
+          width: 150,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(5),
           ),
         ),
         const SizedBox(height: 15),
@@ -324,10 +386,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: 300,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
+          child: const Center(
+            child: CircularProgressIndicator(color: Colors.blueAccent),
+          ),
         ),
         const SizedBox(height: 20),
       ],

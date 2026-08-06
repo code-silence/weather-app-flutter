@@ -104,7 +104,7 @@ class CurrentWeatherView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4), // Semi-transparent
+            color: Colors.white.withValues(alpha: 0.4), // Semi-transparent
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
