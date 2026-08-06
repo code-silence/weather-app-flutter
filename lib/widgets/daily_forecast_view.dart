@@ -25,7 +25,7 @@ class DailyForecastView extends StatelessWidget {
         const SizedBox(height: 15),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4), // Glass effect container
+            color: Colors.white.withValues(alpha: 0.4), // Glass effect container
             borderRadius: BorderRadius.circular(20),
           ),
           child: ListView.separated(

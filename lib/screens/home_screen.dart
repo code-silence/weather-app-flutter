@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -86,7 +85,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text(
-            'Weather App',
+            'SkyCast',
             style: TextStyle(
               color: Colors.blueGrey.shade900,
               fontWeight: FontWeight.w800,
@@ -124,11 +123,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       decoration: BoxDecoration(
                         // Solid opacity instead of dynamic BackdropFilter blur
                         color: _isSearchExpanded
-                            ? Colors.white.withOpacity(0.95)
-                            : Colors.white.withOpacity(0.55),
+                            ? Colors.white.withValues(alpha: 0.95)
+                            : Colors.white.withValues(alpha: 0.55),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           width: 1,
                         ),
                       ),
@@ -236,7 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Text(
@@ -329,7 +328,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: 250,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(20),
           ),
           child: const Center(
@@ -341,7 +340,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: 24,
           width: 150,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(5),
           ),
         ),
@@ -356,7 +355,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: 80,
                 margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Center(
@@ -378,7 +377,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: 24,
           width: 150,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(5),
           ),
         ),
@@ -387,7 +386,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           height: 300,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(20),
           ),
           child: const Center(
